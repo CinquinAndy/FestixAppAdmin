@@ -32,9 +32,21 @@ class MainPersonnalizedScafold extends StatelessWidget {
                       child: Container(
                         // ****************************** Gradient Mid left
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20.0, 20, 20.0, 0),
+                          padding: const EdgeInsets.fromLTRB(0.0, 20, 0.0, 0),
                           child: Stack(
                             children: [
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0,80,0,0),
+                                child: Image.asset(
+                                  'assets/images/header.png',
+                                  scale: 1,
+                                  colorBlendMode: BlendMode.darken,
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              ),),
                               Scaffold(
                                 backgroundColor: Colors.transparent,
                                 appBar: AppBar(

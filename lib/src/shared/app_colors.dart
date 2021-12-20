@@ -11,6 +11,7 @@ const Color kcGrey300Color = Color(0xff9d9a9e);
 const Color kcGrey200Color = Color(0xffb6b4b7);
 const Color kcGrey100Color = Color(0xffcfced0);
 const Color kcGrey50Color = Color(0xffe8e8e9);
+const Color kcGrey700OpacityColor = Color(0xdd363437);
 const Color kcGrey50OpacityColor = Color(0x22e8e8e9);
 const Color kcGrey100OpacityColor = Color(0x11cfced0);
 
@@ -26,6 +27,8 @@ const Color kcOrange500Color = Color(0xffde792b);
 
 // blue primary
 const Color kcBlue500Color = Color(0xff2b9fde);
+const Color kcBlue300Color = Color(0xff61b0db);
+const Color kcBlue100Color = Color(0xff92c3dd);
 
 // ****** background *******
 const Color kbgPurpleColor = Color(0x667C3AED);

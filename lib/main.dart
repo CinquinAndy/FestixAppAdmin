@@ -1,4 +1,5 @@
-import 'package:festix_app_admin/src/views/pages/events.dart';
+import 'package:festix_app_admin/src/views/pages/login.dart';
+import 'package:festix_app_admin/src/views/pages/register.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -22,12 +23,16 @@ class MyApp extends StatelessWidget {
       //   title,
       //   backtitle: "",
       // ),
-      home: Events(
+      home: Login(
         title,
         backtitle: "",
       ),
       routes: <String, WidgetBuilder>{
-        '/events': (BuildContext context) => const Events(
+        '/login': (BuildContext context) => const Login(
+          "FESTIX",
+          backtitle: "",
+        ),
+        '/register': (BuildContext context) => const Register(
           "FESTIX",
           backtitle: "",
         ),

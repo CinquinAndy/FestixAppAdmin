@@ -50,7 +50,8 @@ const TextStyle bodyBaseTextStyle = TextStyle(
     fontSize: 11,
     height: 1.7,
     fontWeight: FontWeight.w500,
-    letterSpacing: 2);
+    letterSpacing: 2,
+    color: kcGrey100Color);
 
 // Subtitle / description
 const TextStyle bodySubTextStyle = TextStyle(
