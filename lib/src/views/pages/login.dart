@@ -1,23 +1,32 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/views/components/background_custom.dart';
 import 'package:festix_app_admin/src/views/components/card/event/event_day_list.dart';
 import 'package:festix_app_admin/src/views/components/navbar/navigation_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../box_ui.dart';
+import '../../const/const_storage.dart';
+import '../../utils/regexp.dart';
 
 class Login extends StatefulWidget {
   final String title;
   final String backtitle;
-  const Login(this.title,{Key? key, required this.backtitle}) : super(key: key);
+
+  const Login(this.title, {Key? key, required this.backtitle})
+      : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
-  TextEditingController txtEditEmail = TextEditingController();
+  TextEditingController txtEditUsername = TextEditingController();
   TextEditingController txtEditPassword = TextEditingController();
 
   @override
@@ -48,30 +57,33 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                       SizedBox(
-                        width: MediaQuery.of(context).size.width-40,
+                        width: MediaQuery.of(context).size.width - 40,
                         child: TextFormField(
-                          controller: txtEditEmail,
+                          controller: txtEditUsername,
                           style: bodyBaseTextStyle,
                           cursorColor: kcGrey100Color,
                           decoration: const InputDecoration(
                               filled: true,
                               fillColor: kcGrey700OpacityColor,
-                              hintText: "Email",
-                              prefixIcon: Icon(Icons.alternate_email_rounded,color: kcGrey100Color,),
+                              hintText: "Pseudo",
+                              prefixIcon: Icon(
+                                Icons.people_rounded,
+                                color: kcGrey100Color,
+                              ),
                               hintStyle: bodyBaseTextStyle,
                               floatingLabelStyle: bodyBaseTextStyle,
                               labelStyle: bodyBaseTextStyle,
                               prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)))
-                          ),
-                          validator: (value){
-                            return validateEmail(value.toString());
-                          },
+                              border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)))),
                         ),
                       ),
-                      SizedBox(height: 10,),
                       SizedBox(
-                        width: MediaQuery.of(context).size.width-40,
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width - 40,
                         child: TextFormField(
                           controller: txtEditPassword,
                           style: bodyBaseTextStyle,
@@ -81,21 +93,24 @@ class _LoginState extends State<Login> {
                               filled: true,
                               fillColor: kcGrey700OpacityColor,
                               hintText: "Password",
-                              prefixIcon: Icon(Icons.password_rounded,color: kcGrey100Color,),
+                              prefixIcon: Icon(
+                                Icons.password_rounded,
+                                color: kcGrey100Color,
+                              ),
                               hintStyle: bodyBaseTextStyle,
                               floatingLabelStyle: bodyBaseTextStyle,
                               labelStyle: bodyBaseTextStyle,
                               prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)))
-                          ),
-                          validator: (value){
-                            return validateEmail(value.toString());
-                          },
+                              border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)))),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                   Column(
                     children: [
                       Row(
@@ -116,12 +131,13 @@ class _LoginState extends State<Login> {
                         ],
                       ),
                       ElevatedButton(
-                        onPressed: () {},
-                        child:
-                        BoxText.body("Connexion", color: kcGrey900Color),
+                        onPressed: () {
+                          _login();
+                        },
+                        child: BoxText.body("Connexion", color: kcGrey900Color),
                         style: ElevatedButton.styleFrom(
-                          fixedSize: Size(
-                              MediaQuery.of(context).size.width - 80, 40),
+                          fixedSize:
+                              Size(MediaQuery.of(context).size.width - 80, 40),
                           primary: kcBlue300Color,
                         ),
                       ),
@@ -134,18 +150,46 @@ class _LoginState extends State<Login> {
         ],
       ),
     );
-
   }
 
-  String validateEmail(String value) {
-    String pattern = r'([a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z])';
-    RegExp regExp = RegExp(pattern);
-    if (value.isEmpty) {
-      return 'Please enter a value';
-    } else if (!regExp.hasMatch(value)) {
-      return 'Please enter valid email';
+  void _login() async {
+    String identifier = txtEditUsername.text;
+    String password = txtEditPassword.text;
+    // TODO envoyer ces données sur le serveur
+    http.Response response = await http.post(
+      Uri.parse(ConstStorage.API_URL + '/login'),
+      body: jsonEncode(
+          <String, String>{"username": identifier, "password": password}),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    if (response.statusCode == 200) {
+      String? cookiesString = response.headers['set-cookie'];
+
+      if(cookiesString != null){
+        await const FlutterSecureStorage().write(
+            key: ConstStorage.X_XSRF_TOKEN,
+            value: RegexpTokens.getCompleteXsrf(cookiesString)
+        );
+        await const FlutterSecureStorage().write(
+            key: ConstStorage.COOKIE_BEARER,
+            value: RegexpTokens.getCompleteBearer(cookiesString)
+        );
+        // print(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN));
+        // String valueXsrf = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? "");
+        // print("matchedText");
+        // print(valueXsrf);
+        //
+        // print("**********************");
+        //
+        // print(await const FlutterSecureStorage().read(key: ConstStorage.COOKIE_BEARER));
+        // String valueJwt = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.COOKIE_BEARER) ?? "");
+        // print("matchedText");
+        // print(valueJwt);
+      }
+    } else {
+      log("Login done with error ${response.statusCode}");
     }
-    return '';
   }
 }
-
