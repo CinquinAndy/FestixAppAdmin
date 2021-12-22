@@ -79,7 +79,7 @@ class _LoginState extends State<Login> {
                                       BorderRadius.all(Radius.circular(8)))),
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       SizedBox(
@@ -108,7 +108,7 @@ class _LoginState extends State<Login> {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   Column(
@@ -155,7 +155,6 @@ class _LoginState extends State<Login> {
   void _login() async {
     String identifier = txtEditUsername.text;
     String password = txtEditPassword.text;
-    // TODO envoyer ces données sur le serveur
     http.Response response = await http.post(
       Uri.parse(ConstStorage.API_URL + '/login'),
       body: jsonEncode(
@@ -187,9 +186,50 @@ class _LoginState extends State<Login> {
         // String valueJwt = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.COOKIE_BEARER) ?? "");
         // print("matchedText");
         // print(valueJwt);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            action: SnackBarAction(
+              label: '✘',
+              onPressed: () {
+                ScaffoldMessengerState().removeCurrentSnackBar();
+              },
+            ),
+            content: const Text("La connexion c'est bien passée !"),
+            duration: const Duration(milliseconds: 2000),
+            width: MediaQuery.of(context).size.width - 40,
+            // Width of the SnackBar.
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0, // Inner padding for SnackBar content.
+            ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+        );
       }
     } else {
-      log("Login done with error ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          action: SnackBarAction(
+            label: '✘',
+            onPressed: () {
+              ScaffoldMessengerState().removeCurrentSnackBar();
+            },
+          ),
+          content: const Text("Erreur lors de la connexion !"),
+          duration: const Duration(milliseconds: 2000),
+          width: MediaQuery.of(context).size.width - 40,
+          // Width of the SnackBar.
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8.0, // Inner padding for SnackBar content.
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      );
     }
   }
 }
