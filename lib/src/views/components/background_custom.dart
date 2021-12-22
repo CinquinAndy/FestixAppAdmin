@@ -8,12 +8,14 @@ class MainPersonnalizedScafold extends StatelessWidget {
   final Widget content;
   final String title;
   final String backtitle;
+  final bool displayImage;
 
   const MainPersonnalizedScafold({
     Key? key,
     required this.content,
     required this.title,
     required this.backtitle,
+    required this.displayImage,
   }) : super(key: key);
 
   @override
@@ -35,18 +37,22 @@ class MainPersonnalizedScafold extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(0.0, 20, 0.0, 0),
                           child: Stack(
                             children: [
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                child: Padding(
-                                padding: const EdgeInsets.fromLTRB(0,80,0,0),
-                                child: Image.asset(
-                                  'assets/images/header.png',
-                                  scale: 1,
-                                  colorBlendMode: BlendMode.darken,
-                                  fit: BoxFit.fitWidth,
-                                ),
-                              ),),
+                              displayImage == true
+                                  ? Positioned(
+                                      top: 0,
+                                      left: 0,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 80, 0, 0),
+                                        child: Image.asset(
+                                          'assets/images/header.png',
+                                          scale: 1,
+                                          colorBlendMode: BlendMode.darken,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
                               Scaffold(
                                 backgroundColor: Colors.transparent,
                                 appBar: AppBar(

@@ -3,8 +3,6 @@ import 'dart:developer';
 
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/views/components/background_custom.dart';
-import 'package:festix_app_admin/src/views/components/card/event/event_day_list.dart';
-import 'package:festix_app_admin/src/views/components/navbar/navigation_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,6 +32,7 @@ class _LoginState extends State<Login> {
     return MainPersonnalizedScafold(
       title: widget.title,
       backtitle: widget.backtitle,
+      displayImage: true,
       content: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -203,7 +202,7 @@ class _LoginState extends State<Login> {
             ),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(20.0),
             ),
           ),
         );
@@ -226,7 +225,7 @@ class _LoginState extends State<Login> {
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(20.0),
           ),
         ),
       );

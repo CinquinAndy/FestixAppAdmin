@@ -1,5 +1,9 @@
+import 'package:festix_app_admin/src/views/pages/artists.dart';
+import 'package:festix_app_admin/src/views/pages/events.dart';
+import 'package:festix_app_admin/src/views/pages/festivals.dart';
 import 'package:festix_app_admin/src/views/pages/login.dart';
 import 'package:festix_app_admin/src/views/pages/register.dart';
+import 'package:festix_app_admin/src/views/pages/users.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -23,7 +27,7 @@ class MyApp extends StatelessWidget {
       //   title,
       //   backtitle: "",
       // ),
-      home: Login(
+      home: Users(
         title,
         backtitle: "",
       ),
@@ -33,6 +37,22 @@ class MyApp extends StatelessWidget {
           backtitle: "",
         ),
         '/register': (BuildContext context) => const Register(
+          "FESTIX",
+          backtitle: "",
+        ),
+        '/users': (BuildContext context) => const Users(
+          "FESTIX",
+          backtitle: "",
+        ),
+        '/festivals': (BuildContext context) => const Festivals(
+          "FESTIX",
+          backtitle: "",
+        ),
+        '/events': (BuildContext context) => const Events(
+          "FESTIX",
+          backtitle: "",
+        ),
+        '/artists': (BuildContext context) => const Artists(
           "FESTIX",
           backtitle: "",
         ),

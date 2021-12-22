@@ -37,6 +37,7 @@ class _RegisterState extends State<Register> {
     return MainPersonnalizedScafold(
       title: widget.title,
       backtitle: widget.backtitle,
+      displayImage: true,
       content: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -292,7 +293,7 @@ class _RegisterState extends State<Register> {
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(20.0),
           ),
         ),
       );
@@ -316,7 +317,7 @@ class _RegisterState extends State<Register> {
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(20.0),
           ),
         ),
       );
