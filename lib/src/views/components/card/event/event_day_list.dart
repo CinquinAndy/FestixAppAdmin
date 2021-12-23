@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:festix_app_admin/src/const/const_storage.dart';
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/shared/divider_custom.dart';
-import 'package:festix_app_admin/src/utils/FormatDate.dart';
+import 'package:festix_app_admin/src/utils/FormatDateCustom.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,7 +32,7 @@ class _EventDayListState extends State<EventDayList> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            BoxText.body(DateFormat.dateFormatHourMinutes(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']))),
+            BoxText.body(DateFormatCustom.dateFormatHourMinutesCustom(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']))),
             Row(
               children: [
                 // _loadedEvents['data']['events'][i]['artistEnAvant']

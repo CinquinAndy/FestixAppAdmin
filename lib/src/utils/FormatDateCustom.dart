@@ -1,11 +1,11 @@
-abstract class DateFormat{
+abstract class DateFormatCustom{
   static String dateFormatDay(DateTime dateTime){
     return "${dateTime.year}-${dateTime.month}-${dateTime.day}";
   }
-  static String dateFormatDayHour(DateTime dateTime){
+  static String dateFormatDayHourCustom(DateTime dateTime){
     return "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
   }
-  static String dateFormatHourMinutes(DateTime dateTime){
+  static String dateFormatHourMinutesCustom(DateTime dateTime){
     return "${dateTime.hour}:${dateTime.minute}";
   }
 }
