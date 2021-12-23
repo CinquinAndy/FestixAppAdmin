@@ -67,20 +67,26 @@ class _RegisterState extends State<Register> {
                           style: bodyBaseTextStyle,
                           cursorColor: kcGrey100Color,
                           decoration: const InputDecoration(
-                              filled: true,
-                              fillColor: kcGrey700OpacityColor,
-                              hintText: "Email",
-                              prefixIcon: Icon(
-                                Icons.alternate_email_rounded,
-                                color: kcGrey100Color,
+                            filled: true,
+                            fillColor: kcGrey700OpacityColor,
+                            hintText: "Email",
+                            prefixIcon: Icon(
+                              Icons.alternate_email_rounded,
+                              color: kcGrey100Color,
+                            ),
+                            hintStyle: bodyBaseTextStyle,
+                            floatingLabelStyle: bodyBaseTextStyle,
+                            labelStyle: bodyBaseTextStyle,
+                            prefixIconColor: kcGrey100Color,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
-                              hintStyle: bodyBaseTextStyle,
-                              floatingLabelStyle: bodyBaseTextStyle,
-                              labelStyle: bodyBaseTextStyle,
-                              prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)))),
+                            ),
+                          ),
                           validator: (value) {
                             return validateEmail(value.toString());
                           },
@@ -150,20 +156,26 @@ class _RegisterState extends State<Register> {
                           style: bodyBaseTextStyle,
                           cursorColor: kcGrey100Color,
                           decoration: const InputDecoration(
-                              filled: true,
-                              fillColor: kcGrey700OpacityColor,
-                              hintText: "Pseudo",
-                              prefixIcon: Icon(
-                                Icons.people_rounded,
-                                color: kcGrey100Color,
+                            filled: true,
+                            fillColor: kcGrey700OpacityColor,
+                            hintText: "Pseudo",
+                            prefixIcon: Icon(
+                              Icons.people_rounded,
+                              color: kcGrey100Color,
+                            ),
+                            hintStyle: bodyBaseTextStyle,
+                            floatingLabelStyle: bodyBaseTextStyle,
+                            labelStyle: bodyBaseTextStyle,
+                            prefixIconColor: kcGrey100Color,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
-                              hintStyle: bodyBaseTextStyle,
-                              floatingLabelStyle: bodyBaseTextStyle,
-                              labelStyle: bodyBaseTextStyle,
-                              prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)))),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -177,20 +189,26 @@ class _RegisterState extends State<Register> {
                           cursorColor: kcGrey100Color,
                           obscureText: true,
                           decoration: const InputDecoration(
-                              filled: true,
-                              fillColor: kcGrey700OpacityColor,
-                              hintText: "Password",
-                              prefixIcon: Icon(
-                                Icons.password_rounded,
-                                color: kcGrey100Color,
+                            filled: true,
+                            fillColor: kcGrey700OpacityColor,
+                            hintText: "Password",
+                            prefixIcon: Icon(
+                              Icons.password_rounded,
+                              color: kcGrey100Color,
+                            ),
+                            hintStyle: bodyBaseTextStyle,
+                            floatingLabelStyle: bodyBaseTextStyle,
+                            labelStyle: bodyBaseTextStyle,
+                            prefixIconColor: kcGrey100Color,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
-                              hintStyle: bodyBaseTextStyle,
-                              floatingLabelStyle: bodyBaseTextStyle,
-                              labelStyle: bodyBaseTextStyle,
-                              prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)))),
+                            ),
+                          ),
                           validator: (value) {
                             return validateEmail(value.toString());
                           },

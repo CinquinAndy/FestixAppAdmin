@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // grey
 const Color kcGrey900Color = Color(0xff080708);
 const Color kcGrey800Color = Color(0xff1c1b1d);
+const Color kcGrey750Color = Color(0xff29272a);
 const Color kcGrey700Color = Color(0xff363437);
 const Color kcGrey600Color = Color(0xff504d51);
 const Color kcGrey500Color = Color(0xff6a666b);

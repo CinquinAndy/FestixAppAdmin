@@ -62,20 +62,26 @@ class _LoginState extends State<Login> {
                           style: bodyBaseTextStyle,
                           cursorColor: kcGrey100Color,
                           decoration: const InputDecoration(
-                              filled: true,
-                              fillColor: kcGrey700OpacityColor,
-                              hintText: "Pseudo",
-                              prefixIcon: Icon(
-                                Icons.people_rounded,
-                                color: kcGrey100Color,
+                            filled: true,
+                            fillColor: kcGrey700OpacityColor,
+                            hintText: "Pseudo",
+                            prefixIcon: Icon(
+                              Icons.people_rounded,
+                              color: kcGrey100Color,
+                            ),
+                            hintStyle: bodyBaseTextStyle,
+                            floatingLabelStyle: bodyBaseTextStyle,
+                            labelStyle: bodyBaseTextStyle,
+                            prefixIconColor: kcGrey100Color,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
-                              hintStyle: bodyBaseTextStyle,
-                              floatingLabelStyle: bodyBaseTextStyle,
-                              labelStyle: bodyBaseTextStyle,
-                              prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)))),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -89,20 +95,26 @@ class _LoginState extends State<Login> {
                           cursorColor: kcGrey100Color,
                           obscureText: true,
                           decoration: const InputDecoration(
-                              filled: true,
-                              fillColor: kcGrey700OpacityColor,
-                              hintText: "Password",
-                              prefixIcon: Icon(
-                                Icons.password_rounded,
-                                color: kcGrey100Color,
+                            filled: true,
+                            fillColor: kcGrey700OpacityColor,
+                            hintText: "Password",
+                            prefixIcon: Icon(
+                              Icons.password_rounded,
+                              color: kcGrey100Color,
+                            ),
+                            hintStyle: bodyBaseTextStyle,
+                            floatingLabelStyle: bodyBaseTextStyle,
+                            labelStyle: bodyBaseTextStyle,
+                            prefixIconColor: kcGrey100Color,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
-                              hintStyle: bodyBaseTextStyle,
-                              floatingLabelStyle: bodyBaseTextStyle,
-                              labelStyle: bodyBaseTextStyle,
-                              prefixIconColor: kcGrey100Color,
-                              border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)))),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -165,15 +177,13 @@ class _LoginState extends State<Login> {
     if (response.statusCode == 200) {
       String? cookiesString = response.headers['set-cookie'];
 
-      if(cookiesString != null){
+      if (cookiesString != null) {
         await const FlutterSecureStorage().write(
             key: ConstStorage.X_XSRF_TOKEN,
-            value: RegexpTokens.getCompleteXsrf(cookiesString)
-        );
+            value: RegexpTokens.getCompleteXsrf(cookiesString));
         await const FlutterSecureStorage().write(
             key: ConstStorage.COOKIE_BEARER,
-            value: RegexpTokens.getCompleteBearer(cookiesString)
-        );
+            value: RegexpTokens.getCompleteBearer(cookiesString));
         // print(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN));
         // String valueXsrf = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? "");
         // print("matchedText");

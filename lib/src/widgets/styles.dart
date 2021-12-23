@@ -53,6 +53,15 @@ const TextStyle bodyBaseTextStyle = TextStyle(
     letterSpacing: 2,
     color: kcGrey100Color);
 
+// Base
+const TextStyle inputModalTextStyle = TextStyle(
+    fontFamily: "RedHatText",
+    fontSize: 11,
+    height: 1.7,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 2,
+    color: kcGrey300Color);
+
 // Subtitle / description
 const TextStyle bodySubTextStyle = TextStyle(
     fontFamily: "RedHatText",
