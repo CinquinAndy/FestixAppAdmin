@@ -176,7 +176,6 @@ class _LoginState extends State<Login> {
     );
     if (response.statusCode == 200) {
       String? cookiesString = response.headers['set-cookie'];
-
       if (cookiesString != null) {
         await const FlutterSecureStorage().write(
             key: ConstStorage.X_XSRF_TOKEN,
@@ -184,17 +183,6 @@ class _LoginState extends State<Login> {
         await const FlutterSecureStorage().write(
             key: ConstStorage.COOKIE_BEARER,
             value: RegexpTokens.getCompleteBearer(cookiesString));
-        // print(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN));
-        // String valueXsrf = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? "");
-        // print("matchedText");
-        // print(valueXsrf);
-        //
-        // print("**********************");
-        //
-        // print(await const FlutterSecureStorage().read(key: ConstStorage.COOKIE_BEARER));
-        // String valueJwt = RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.COOKIE_BEARER) ?? "");
-        // print("matchedText");
-        // print(valueJwt);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             action: SnackBarAction(
@@ -217,6 +205,8 @@ class _LoginState extends State<Login> {
           ),
         );
       }
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed("/users");
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

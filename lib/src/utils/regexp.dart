@@ -1,6 +1,7 @@
 class RegexpTokens{
   static RegExp regExpXsrf = RegExp(r"XSRF-TOKEN=(.*?);");
   static RegExp regExpBearer = RegExp(r"COOKIE-BEARER=(.*?);");
+  static RegExp regExpJsession = RegExp(r"JSESSIONID=(.*?);");
   static RegExp regExpTokenFromCookie = RegExp(r"(?:=)(.*?);");
 
   static String getCompleteBearer(String value){
@@ -9,6 +10,11 @@ class RegexpTokens{
   }
   static String getCompleteXsrf(String value){
     value = regExpXsrf.stringMatch(value).toString()+ " Path=/; Domain=192.168.1.128";
+    return value;
+  }
+
+  static String getCompleteJsessionid(String value){
+    value = regExpJsession.stringMatch(value).toString()+ " Path=/; HttpOnly; Domain=192.168.1.128";
     return value;
   }
 
