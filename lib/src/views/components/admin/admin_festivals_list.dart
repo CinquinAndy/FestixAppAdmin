@@ -439,53 +439,6 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
     return Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 0), child: row);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: widget.loadedValue.isEmpty
-            ? Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(
-                      height: 40,
-                      width: 40,
-                      child: CircularProgressIndicator(
-                        semanticsLabel: 'Linear progress indicator',
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
-                  child: ListView.builder(
-                    itemCount: 1,
-                    scrollDirection: Axis.vertical,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return Column(children: [
-                        Row(
-                          children: [
-                            BoxText.heading3_5(
-                              widget.title,
-                              color: kcGrey50Color,
-                              textAlign: TextAlign.start,
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: DividerCustom(height: 2, width: 400),
-                        ),
-                        buildContent(),
-                      ]);
-                    },
-                  ),
-                ),
-              ));
-  }
-
   FestivalModel? getFestivalsSelected() {
     for (var festival in widget.loadedValue['data']['festivals']) {
       if (festival['id'] == txtEditId.text) {
@@ -494,7 +447,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
         return FestivalModel(txtEditId.text, txtEditTitle.text, txtEditPhotoUrl.text, txtEditDescription.text, DateTime.parse(txtEditDateStart.text), DateTime.parse(txtEditDateEnd.text));
       }
     }
-    return null;
+    return FestivalModel("0", txtEditTitle.text, txtEditPhotoUrl.text, txtEditDescription.text, DateTime.parse(txtEditDateStart.text), DateTime.parse(txtEditDateEnd.text));
   }
 
   Future<String> cookies() async {
@@ -570,6 +523,47 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
     }
   }
 
+  void _add() async {
+    print("add");
+    var value = getFestivalsSelected();
+    if (value != null) {
+      FestivalModel festivalModel = value;
+      http.Response response = await http.post(
+        Uri.parse(ConstStorage.API_URL + '/festival/create/'),
+        body: jsonEncode(
+          <String, dynamic>{
+            "title": festivalModel.title,
+            "description": festivalModel.description,
+            "photoUrl": festivalModel.photoUrl,
+            "dateStart": DateFormat("yyyy-MM-dd").format(festivalModel.dateStart),
+            "dateEnd": DateFormat("yyyy-MM-dd").format(festivalModel.dateEnd),
+          },
+        ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'cookie': await cookies(),
+          'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
+        },
+      );
+      print(response);
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        String? cookiesString = response.headers['set-cookie'];
+        if (cookiesString != null) {
+          await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
+          await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
+          CustomWidgets.buildSnackbar(context, "La création c'est bien passée !");
+        }
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed("/festivals");
+      } else {
+        CustomWidgets.buildSnackbar(context, "Erreur lors de la création !");
+      }
+    }
+  }
+
   void _delete() async {
     var value = getFestivalsSelected();
     if (value != null) {
@@ -596,5 +590,329 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression!");
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: widget.loadedValue.isEmpty
+          ? Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: CircularProgressIndicator(
+                      semanticsLabel: 'Linear progress indicator',
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
+                child: ListView.builder(
+                  itemCount: 1,
+                  scrollDirection: Axis.vertical,
+                  itemBuilder: (BuildContext ctx, index) {
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            BoxText.heading3_5(
+                              widget.title,
+                              color: kcGrey50Color,
+                              textAlign: TextAlign.start,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Set fields
+                                txtEditId.text = "";
+                                txtEditTitle.text = "";
+                                txtEditDateStart.text = "";
+                                txtEditDateEnd.text = "";
+                                txtEditDescription.text = "";
+                                txtEditPhotoUrl.text = "";
+
+                                // ****************************************** MODAL ************************** //
+                                showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: kcGrey750Color,
+                                  context: context,
+                                  elevation: 10,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40.0),
+                                  ),
+                                  builder: (context) {
+                                    return Wrap(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.fromLTRB(0, 40, 0, 40),
+                                                    child: BoxText.heading3_5(
+                                                      "Ajouter un Festival",
+                                                      color: kcGrey200Color,
+                                                    ),
+                                                  ),
+                                                  // ****************************************** FIELDS MODAL ************************** //
+                                                  Visibility(
+                                                    child: TextFormField(
+                                                      controller: txtEditId,
+                                                      enabled: false,
+                                                      readOnly: true,
+                                                    ),
+                                                    visible: false,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditTitle,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Titre",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditPhotoUrl,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Photo url",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      readOnly: true,
+                                                      onTap: () async {
+                                                        DateTime? pickedDate = await showDatePicker(
+                                                            context: context,
+                                                            initialDate: DateTime.now(),
+                                                            firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
+                                                            lastDate: DateTime.now().add(const Duration(days: 365)));
+
+                                                        if (pickedDate != null) {
+                                                          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                                                          setState(
+                                                            () {
+                                                              txtEditDateStart.text = formattedDate; //set output date to TextField value.
+                                                            },
+                                                          );
+                                                        }
+                                                      },
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditDateStart,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Date de début du festival",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      readOnly: true,
+                                                      onTap: () async {
+                                                        DateTime? pickedDate = await showDatePicker(
+                                                            context: context,
+                                                            initialDate: DateTime.now(),
+                                                            firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
+                                                            lastDate: DateTime.now().add(const Duration(days: 365)));
+
+                                                        if (pickedDate != null) {
+                                                          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                                                          setState(
+                                                            () {
+                                                              txtEditDateEnd.text = formattedDate; //set output date to TextField value.
+                                                            },
+                                                          );
+                                                        }
+                                                      },
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditDateEnd,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Date de fin du festival",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      keyboardType: TextInputType.multiline,
+                                                      maxLines: null,
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditDescription,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Description du festival",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 30,
+                                                  ),
+                                                  // ****************************************** BUTTONS MODAL ************************** //
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                        child: BoxText.body("Annuler", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcGrey200Color,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 40,
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          _add();
+                                                        },
+                                                        child: BoxText.body("Ajouter", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcBlue500Color,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: BoxText.body("Ajouter", color: kcGrey900Color),
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: Size(MediaQuery.of(context).size.width / 2 - 100, 35),
+                                primary: kcBlue500Color,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                          child: DividerCustom(height: 2, width: 400),
+                        ),
+                        buildContent(),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+    );
   }
 }
