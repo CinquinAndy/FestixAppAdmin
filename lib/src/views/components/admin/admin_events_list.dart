@@ -1,63 +1,52 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:festix_app_admin/src/const/const_storage.dart';
-import 'package:festix_app_admin/src/models/UserModel.dart';
+import 'package:festix_app_admin/src/models/EventModel.dart';
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/shared/divider_custom.dart';
 import 'package:festix_app_admin/src/utils/regexp.dart';
 import 'package:festix_app_admin/src/views/components/card/snack_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import '../../../../../box_ui.dart';
 
-class AdminUsersList extends StatefulWidget {
+class AdminEventsList extends StatefulWidget {
   final String title;
   final Map<String, dynamic> loadedValue;
+  final String idFestival;
 
-  const AdminUsersList({
+  const AdminEventsList({
     Key? key,
     required this.title,
     required this.loadedValue,
+    required this.idFestival,
   }) : super(key: key);
 
   @override
-  _AdminUsersListState createState() => _AdminUsersListState();
+  _AdminEventsListState createState() => _AdminEventsListState();
 }
 
-class _AdminUsersListState extends State<AdminUsersList> {
+class _AdminEventsListState extends State<AdminEventsList> {
   // init variables
   TextEditingController txtEditId = TextEditingController();
-  TextEditingController txtEditFirstname = TextEditingController();
-  TextEditingController txtEditLastname = TextEditingController();
-  TextEditingController txtEditUsername = TextEditingController();
-  TextEditingController txtEditEmail = TextEditingController();
-  Map<String, dynamic> switchesValues = {};
-
-  /**
-   * set data for all switches
-   */
-  Future<void> _setDataSwitch() async {
-    for (var i = 0; widget.loadedValue['data']["users"].length > i; i++) {
-      switchesValues.putIfAbsent(widget.loadedValue['data']["users"][i]["username"], () => widget.loadedValue['data']["users"][i]["enabled"]);
-    }
-    print(switchesValues);
-  }
+  TextEditingController txtEditTitle = TextEditingController();
+  TextEditingController txtEditDate = TextEditingController();
+  TextEditingController txtEditTime = TextEditingController();
+  TextEditingController txtEditArtistEnAvant = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _setDataSwitch();
   }
 
   Padding buildContent() {
     List<Widget> rows = [];
     Widget row = const Padding(padding: EdgeInsets.all(0));
-    for (var i = 0; i < widget.loadedValue['data']["users"].length; i++) {
+    for (var i = 0; i < widget.loadedValue['data']["events"].length; i++) {
       rows.add(
         Column(
           children: [
@@ -65,28 +54,31 @@ class _AdminUsersListState extends State<AdminUsersList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 15, 0, 35),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          BoxText.body(widget.loadedValue['data']['users'][i]['lastname'] + " " + widget.loadedValue['data']['users'][i]['firstname']),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        BoxText.bodySub(
-                          "administrateur validé :",
-                          color: kcGrey200Color,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            BoxText.body(widget.loadedValue['data']['events'][i]['title']),
+                          ],
                         ),
-                      ],
-                    )
-                  ],
+                      ),
+                      Row(
+                        children: [
+                          BoxText.bodySub(
+                            DateFormat('yyyy-MM-dd hh:mm').format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime'])),
+                            color: kcGrey200Color,
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -98,13 +90,15 @@ class _AdminUsersListState extends State<AdminUsersList> {
                           child: IconButton(
                             onPressed: () {
                               // Set fields
-                              txtEditId.text = widget.loadedValue['data']['users'][i]['id'];
-                              txtEditFirstname.text = widget.loadedValue['data']['users'][i]['firstname'];
-                              txtEditLastname.text = widget.loadedValue['data']['users'][i]['lastname'];
-                              txtEditUsername.text = widget.loadedValue['data']['users'][i]['username'];
-                              txtEditEmail.text = widget.loadedValue['data']['users'][i]['email'];
+                              txtEditId.text = widget.loadedValue['data']['events'][i]['id'];
+                              txtEditTitle.text = widget.loadedValue['data']['events'][i]['title'];
+                              txtEditDate.text = DateFormat("yyyy-MM-dd").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']));
+                              txtEditTime.text = DateFormat("hh:mm").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']));
+                              txtEditArtistEnAvant.text = widget.loadedValue['data']['events'][i]['artistEnAvant'];
+
                               // ****************************************** MODAL ************************** //
                               showModalBottomSheet(
+                                  isScrollControlled: true,
                                   backgroundColor: kcGrey750Color,
                                   context: context,
                                   elevation: 10,
@@ -124,7 +118,7 @@ class _AdminUsersListState extends State<AdminUsersList> {
                                                   Padding(
                                                     padding: const EdgeInsets.fromLTRB(0, 40, 0, 40),
                                                     child: BoxText.heading3_5(
-                                                      "Modifier un Utilisateur",
+                                                      "Modifier un Event",
                                                       color: kcGrey200Color,
                                                     ),
                                                   ),
@@ -141,14 +135,14 @@ class _AdminUsersListState extends State<AdminUsersList> {
                                                     width: MediaQuery.of(context).size.width - 70,
                                                     child: TextFormField(
                                                       textAlign: TextAlign.left,
-                                                      controller: txtEditUsername,
+                                                      controller: txtEditTitle,
                                                       style: bodyBaseTextStyle,
                                                       cursorColor: kcGrey100Color,
                                                       decoration: InputDecoration(
-                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                                                         filled: true,
                                                         fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['users'][i]['firstname'],
+                                                        hintText: widget.loadedValue['data']['events'][i]['title'],
                                                         hintStyle: inputModalTextStyle,
                                                         floatingLabelStyle: inputModalTextStyle,
                                                         labelStyle: bodyBaseTextStyle,
@@ -170,19 +164,19 @@ class _AdminUsersListState extends State<AdminUsersList> {
                                                     width: MediaQuery.of(context).size.width - 70,
                                                     child: TextFormField(
                                                       textAlign: TextAlign.left,
-                                                      controller: txtEditFirstname,
+                                                      controller: txtEditArtistEnAvant,
                                                       style: bodyBaseTextStyle,
                                                       cursorColor: kcGrey100Color,
-                                                      decoration: const InputDecoration(
-                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                                      decoration: InputDecoration(
+                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                                                         filled: true,
                                                         fillColor: kcGrey800Color,
-                                                        hintText: "Prénom",
+                                                        hintText: widget.loadedValue['data']['events'][i]['artistEnAvant'],
                                                         hintStyle: inputModalTextStyle,
                                                         floatingLabelStyle: inputModalTextStyle,
                                                         labelStyle: bodyBaseTextStyle,
                                                         prefixIconColor: kcGrey100Color,
-                                                        border: OutlineInputBorder(
+                                                        border: const OutlineInputBorder(
                                                           borderRadius: BorderRadius.all(Radius.circular(8)),
                                                           borderSide: BorderSide(
                                                             width: 0,
@@ -192,86 +186,108 @@ class _AdminUsersListState extends State<AdminUsersList> {
                                                       ),
                                                     ),
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context).size.width - 70,
-                                                    child: TextFormField(
-                                                      textAlign: TextAlign.left,
-                                                      controller: txtEditLastname,
-                                                      style: bodyBaseTextStyle,
-                                                      cursorColor: kcGrey100Color,
-                                                      decoration: const InputDecoration(
-                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                                        filled: true,
-                                                        fillColor: kcGrey800Color,
-                                                        hintText: "Nom",
-                                                        hintStyle: inputModalTextStyle,
-                                                        floatingLabelStyle: inputModalTextStyle,
-                                                        labelStyle: bodyBaseTextStyle,
-                                                        prefixIconColor: kcGrey100Color,
-                                                        border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                          borderSide: BorderSide(
-                                                            width: 0,
-                                                            style: BorderStyle.none,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context).size.width - 70,
-                                                    child: TextFormField(
-                                                      textAlign: TextAlign.left,
-                                                      controller: txtEditEmail,
-                                                      style: bodyBaseTextStyle,
-                                                      cursorColor: kcGrey100Color,
-                                                      decoration: const InputDecoration(
-                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                                        filled: true,
-                                                        fillColor: kcGrey800Color,
-                                                        hintText: "Email",
-                                                        hintStyle: inputModalTextStyle,
-                                                        floatingLabelStyle: inputModalTextStyle,
-                                                        labelStyle: bodyBaseTextStyle,
-                                                        prefixIconColor: kcGrey100Color,
-                                                        border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                          borderSide: BorderSide(
-                                                            width: 0,
-                                                            style: BorderStyle.none,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      validator: (value) {
-                                                        return validateEmail(value.toString());
-                                                      },
-                                                    ),
-                                                  ),
-                                                  // ****************************************** BUTTONS MODAL ************************** //
                                                   const SizedBox(
                                                     height: 10,
                                                   ),
                                                   Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
-                                                      BoxText.body(
-                                                        "Administrateur validé ?",
-                                                        color: kcGrey200Color,
+                                                      SizedBox(
+                                                        width: MediaQuery.of(context).size.width / 2 - 70,
+                                                        child: TextFormField(
+                                                          readOnly: true,
+                                                          onTap: () async {
+                                                            DateTime? pickedDate = await showDatePicker(
+                                                                context: context,
+                                                                initialDate: DateTime.now(),
+                                                                firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
+                                                                lastDate: DateTime.now().add(const Duration(days: 365)));
+                                                            if (pickedDate != null) {
+                                                              print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                                              String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                                                              print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                                                              //you can implement different kind of Date Format here according to your requirement
+
+                                                              setState(() {
+                                                                txtEditDate.text = formattedDate; //set output date to TextField value.
+                                                              });
+                                                            } else {
+                                                              print("Date is not selected");
+                                                            }
+                                                          },
+                                                          textAlign: TextAlign.left,
+                                                          controller: txtEditDate,
+                                                          style: bodyBaseTextStyle,
+                                                          cursorColor: kcGrey100Color,
+                                                          decoration: InputDecoration(
+                                                            contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                            filled: true,
+                                                            fillColor: kcGrey800Color,
+                                                            hintText: DateFormat("yyyy-MM-dd").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime'])),
+                                                            hintStyle: inputModalTextStyle,
+                                                            floatingLabelStyle: inputModalTextStyle,
+                                                            labelStyle: bodyBaseTextStyle,
+                                                            prefixIconColor: kcGrey100Color,
+                                                            border: const OutlineInputBorder(
+                                                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                              borderSide: BorderSide(
+                                                                width: 0,
+                                                                style: BorderStyle.none,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
-                                                      Switch(
-                                                          value: switchesValues[widget.loadedValue['data']["users"][i]["username"]],
-                                                          onChanged: (value) {
-                                                            setState(() {
-                                                              switchesValues[widget.loadedValue['data']["users"][i]["username"]] = value;
-                                                            });
-                                                          }),
+                                                      const SizedBox(
+                                                        width: 30,
+                                                      ),
+                                                      SizedBox(
+                                                        width: MediaQuery.of(context).size.width / 2 - 70,
+                                                        child: TextFormField(
+                                                          readOnly: true,
+                                                          onTap: () async {
+                                                            TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                                                            if (pickedTime != null) {
+                                                              print(pickedTime); //pickedDate output format => 2021-03-10 00:00:00.000
+                                                              final now = DateTime.now();
+                                                              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
+                                                              final format = DateFormat.jm(); //"6:00 AM"
+                                                              String formattedTime = format.format(dt);
+                                                              print(formattedTime);
+                                                              //formatted date output using intl package =>  2021-03-16
+                                                              //you can implement different kind of Date Format here according to your requirement
+
+                                                              setState(() {
+                                                                txtEditTime.text = formattedTime; //set output date to TextField value.
+                                                              });
+                                                            } else {
+                                                              print("Date is not selected");
+                                                            }
+                                                          },
+                                                          textAlign: TextAlign.left,
+                                                          controller: txtEditTime,
+                                                          style: bodyBaseTextStyle,
+                                                          cursorColor: kcGrey100Color,
+                                                          decoration: InputDecoration(
+                                                            contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                            filled: true,
+                                                            fillColor: kcGrey800Color,
+                                                            hintText: DateFormat("hh:mm").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime'])),
+                                                            hintStyle: inputModalTextStyle,
+                                                            floatingLabelStyle: inputModalTextStyle,
+                                                            labelStyle: bodyBaseTextStyle,
+                                                            prefixIconColor: kcGrey100Color,
+                                                            border: const OutlineInputBorder(
+                                                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                              borderSide: BorderSide(
+                                                                width: 0,
+                                                                style: BorderStyle.none,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ],
+                                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                   ),
                                                   const SizedBox(
                                                     height: 30,
@@ -327,12 +343,13 @@ class _AdminUsersListState extends State<AdminUsersList> {
                           padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                           child: IconButton(
                             onPressed: () {
-                              txtEditId.text = widget.loadedValue['data']['users'][i]['id'];
-                              txtEditFirstname.text = widget.loadedValue['data']['users'][i]['firstname'];
-                              txtEditLastname.text = widget.loadedValue['data']['users'][i]['lastname'];
-                              txtEditUsername.text = widget.loadedValue['data']['users'][i]['username'];
-                              txtEditEmail.text = widget.loadedValue['data']['users'][i]['email'];
-                              _deleteuser();
+                              // Set fields
+                              txtEditId.text = widget.loadedValue['data']['events'][i]['id'];
+                              txtEditTitle.text = widget.loadedValue['data']['events'][i]['title'];
+                              txtEditDate.text = DateFormat("yyyy-MM-dd").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']));
+                              txtEditTime.text = DateFormat("hh:mm").format(DateTime.parse(widget.loadedValue['data']['events'][i]['dateTime']));
+                              txtEditArtistEnAvant.text = widget.loadedValue['data']['events'][i]['artistEnAvant'];
+                              _delete();
                             },
                             icon: const Icon(
                               Icons.delete_rounded,
@@ -342,27 +359,6 @@ class _AdminUsersListState extends State<AdminUsersList> {
                             padding: const EdgeInsets.all(0),
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 28, 0),
-                          child: Switch(
-                              value: switchesValues[widget.loadedValue['data']["users"][i]["username"]],
-                              onChanged: (value) {
-                                setState(() {
-                                  switchesValues[widget.loadedValue['data']["users"][i]["username"]] = value;
-                                  txtEditId.text = widget.loadedValue['data']['users'][i]['id'];
-                                  txtEditFirstname.text = widget.loadedValue['data']['users'][i]['firstname'];
-                                  txtEditLastname.text = widget.loadedValue['data']['users'][i]['lastname'];
-                                  txtEditUsername.text = widget.loadedValue['data']['users'][i]['username'];
-                                  txtEditEmail.text = widget.loadedValue['data']['users'][i]['email'];
-                                  _changestate();
-                                });
-                              }),
-                        )
                       ],
                     ),
                   ],
@@ -386,7 +382,7 @@ class _AdminUsersListState extends State<AdminUsersList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: widget.loadedValue.isEmpty || switchesValues.isEmpty
+        child: widget.loadedValue.isEmpty
             ? Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -430,21 +426,11 @@ class _AdminUsersListState extends State<AdminUsersList> {
               ));
   }
 
-  String validateEmail(String value) {
-    String pattern = r'([a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z])';
-    RegExp regExp = RegExp(pattern);
-    if (value.isEmpty) {
-      return 'Please enter a value';
-    } else if (!regExp.hasMatch(value)) {
-      return 'Please enter valid email';
-    }
-    return '';
-  }
-
-  UserModel? getUsersSelected() {
-    for (var user in widget.loadedValue['data']['users']) {
-      if (user['id'] == txtEditId.text) {
-        return UserModel(txtEditId.text, txtEditFirstname.text, txtEditLastname.text, txtEditUsername.text, txtEditEmail.text, switchesValues[user['username']]);
+  EventModel? getEventsSelected() {
+    for (var event in widget.loadedValue['data']['events']) {
+      if (event['id'] == txtEditId.text) {
+        DateTime datetime = DateTime.parse(txtEditDate.text + "T" + txtEditTime.text);
+        return EventModel(txtEditId.text, txtEditTitle.text, datetime, txtEditArtistEnAvant.text, widget.idFestival);
       }
     }
     return null;
@@ -486,20 +472,14 @@ class _AdminUsersListState extends State<AdminUsersList> {
   }
 
   void _update() async {
-    var value = getUsersSelected();
+    var value = getEventsSelected();
     if (value != null) {
-      UserModel userModel = value;
+      EventModel eventModel = value;
       http.Response response = await http.patch(
-        Uri.parse(ConstStorage.API_URL + '/user/update/' + userModel.id + "/"),
-        body: jsonEncode(<String, dynamic>{
-          "email": userModel.email,
-          "username": userModel.username,
-          "password": "",
-          "firstname": userModel.firstname,
-          "lastname": userModel.lastname,
-          "enabled": userModel.enabled,
-          "roles": [""]
-        }),
+        Uri.parse(ConstStorage.API_URL + '/event/update/' + eventModel.id + "/"),
+        body: jsonEncode(
+          <String, dynamic>{"title": eventModel.title, "dateTime": DateFormat("yyyy-MM-ddThh:mm").format(eventModel.dateTime), "artistEnAvant": eventModel.artistEnAvant, "festival": widget.idFestival},
+        ),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'cookie': await cookies(),
@@ -512,48 +492,22 @@ class _AdminUsersListState extends State<AdminUsersList> {
           await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
           await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
           CustomWidgets.buildSnackbar(context, "L'update c'est bien passée !");
-
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed("/users");
         }
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed("/events");
       } else {
-        CustomWidgets.buildSnackbar(context, "Erreur de l'update !");
+        CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
       }
     }
   }
 
-  void _changestate() async {
-    var value = getUsersSelected();
+  void _delete() async {
+    var value = getEventsSelected();
     if (value != null) {
-      UserModel userModel = value;
-      http.Response response = await http.patch(
-        Uri.parse(ConstStorage.API_URL + '/user/changestate/' + userModel.id + "/"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'cookie': await cookies(),
-          'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
-        },
-      );
-      if (response.statusCode == 200) {
-        String? cookiesString = response.headers['set-cookie'];
-        if (cookiesString != null) {
-          await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
-          await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
-          CustomWidgets.buildSnackbar(context, "Le changement d'état c'est bien passée !");
-        }
-      } else {
-        CustomWidgets.buildSnackbar(context, "Erreur lors du changement d'état !");
-      }
-    }
-  }
-
-  void _deleteuser() async {
-    var value = getUsersSelected();
-    if (value != null) {
-      UserModel userModel = value;
+      EventModel eventModel = value;
       http.Response response = await http.delete(
-        Uri.parse(ConstStorage.API_URL + '/user/delete/' + userModel.id + "/"),
+        Uri.parse(ConstStorage.API_URL + '/event/delete/' + eventModel.id + "/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'cookie': await cookies(),
@@ -568,7 +522,7 @@ class _AdminUsersListState extends State<AdminUsersList> {
           CustomWidgets.buildSnackbar(context, "La suppression c'est bien passée !");
         }
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/users");
+        Navigator.of(context).pushNamed("/events");
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression !");
       }

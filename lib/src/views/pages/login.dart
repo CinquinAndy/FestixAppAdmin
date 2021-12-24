@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/views/components/background_custom.dart';
+import 'package:festix_app_admin/src/views/components/card/snack_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -183,52 +184,12 @@ class _LoginState extends State<Login> {
         await const FlutterSecureStorage().write(
             key: ConstStorage.COOKIE_BEARER,
             value: RegexpTokens.getCompleteBearer(cookiesString));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            action: SnackBarAction(
-              label: '✘',
-              onPressed: () {
-                ScaffoldMessengerState().removeCurrentSnackBar();
-              },
-            ),
-            content: const Text("La connexion c'est bien passée !"),
-            duration: const Duration(milliseconds: 2000),
-            width: MediaQuery.of(context).size.width - 40,
-            // Width of the SnackBar.
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0, // Inner padding for SnackBar content.
-            ),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-        );
       }
+      CustomWidgets.buildSnackbar(context, "La connexion c'est bien passée !");
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed("/users");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          action: SnackBarAction(
-            label: '✘',
-            onPressed: () {
-              ScaffoldMessengerState().removeCurrentSnackBar();
-            },
-          ),
-          content: const Text("Erreur lors de la connexion !"),
-          duration: const Duration(milliseconds: 2000),
-          width: MediaQuery.of(context).size.width - 40,
-          // Width of the SnackBar.
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0, // Inner padding for SnackBar content.
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-      );
+      CustomWidgets.buildSnackbar(context, "Erreur lors de la connexion !");
     }
   }
 }

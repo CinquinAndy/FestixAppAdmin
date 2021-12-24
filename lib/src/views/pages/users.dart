@@ -5,6 +5,7 @@ import 'package:festix_app_admin/src/const/const_storage.dart';
 import 'package:festix_app_admin/src/utils/regexp.dart';
 import 'package:festix_app_admin/src/views/components/admin/admin_users_list.dart';
 import 'package:festix_app_admin/src/views/components/background_custom.dart';
+import 'package:festix_app_admin/src/views/components/card/snack_bar_custom.dart';
 import 'package:festix_app_admin/src/views/components/navbar/navigation_bar_custom.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -42,56 +43,10 @@ class _UsersState extends State<Users> {
         await const FlutterSecureStorage().write(
             key: ConstStorage.X_XSRF_TOKEN,
             value: RegexpTokens.getCompleteXsrf(cookiesString));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            action: SnackBarAction(
-              label: '✘',
-              onPressed: () {
-                ScaffoldMessengerState().removeCurrentSnackBar();
-              },
-            ),
-            content: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text("Les données ont bien étés récupérés !"),
-            ),
-            duration: const Duration(milliseconds: 500),
-            width: MediaQuery.of(context).size.width - 40,
-            // Width of the SnackBar.
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0, // Inner padding for SnackBar content.
-            ),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-        );
+        CustomWidgets.buildSnackbar(context, "Les données ont bien étés récupérées !");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          action: SnackBarAction(
-            label: '✘',
-            onPressed: () {
-              ScaffoldMessengerState().removeCurrentSnackBar();
-            },
-          ),
-          content: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text("Erreur lors de la récup des données !"),
-          ),
-          duration: const Duration(milliseconds: 2000),
-          width: MediaQuery.of(context).size.width - 40,
-          // Width of the SnackBar.
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0, // Inner padding for SnackBar content.
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-      );
+      CustomWidgets.buildSnackbar(context, "Erreur lors de la récupération des données !");
     }
 
     setState(() {

@@ -1,15 +1,11 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:festix_app_admin/src/const/const_storage.dart';
 import 'package:festix_app_admin/src/shared/app_colors.dart';
-import 'package:festix_app_admin/src/utils/regexp.dart';
 import 'package:festix_app_admin/src/views/components/background_custom.dart';
-import 'package:festix_app_admin/src/views/components/card/event/event_day_list.dart';
-import 'package:festix_app_admin/src/views/components/navbar/navigation_bar_custom.dart';
+import 'package:festix_app_admin/src/views/components/card/snack_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../box_ui.dart';
@@ -294,51 +290,12 @@ class _RegisterState extends State<Register> {
       },
     );
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          action: SnackBarAction(
-            label: '✘',
-            onPressed: () {
-              ScaffoldMessengerState().removeCurrentSnackBar();
-            },
-          ),
-          content: const Text("L'enregistrement c'est bien passé !"),
-          duration: const Duration(milliseconds: 2000),
-          width: MediaQuery.of(context).size.width - 40,
-          // Width of the SnackBar.
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0, // Inner padding for SnackBar content.
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-      );
+      CustomWidgets.buildSnackbar(context, "L'inscription c'est bien passée !");
+
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed("/login");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          action: SnackBarAction(
-            label: '✘',
-            onPressed: () {
-              ScaffoldMessengerState().removeCurrentSnackBar();
-            },
-          ),
-          content: const Text("Erreur lors de l'enregistrement !"),
-          duration: const Duration(milliseconds: 2000),
-          width: MediaQuery.of(context).size.width - 40,
-          // Width of the SnackBar.
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0, // Inner padding for SnackBar content.
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-        ),
-      );
+      CustomWidgets.buildSnackbar(context, "Erreur lors de l'inscription !");
     }
   }
 }

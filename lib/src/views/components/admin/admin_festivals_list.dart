@@ -6,6 +6,7 @@ import 'package:festix_app_admin/src/models/FestivalModel.dart';
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/shared/divider_custom.dart';
 import 'package:festix_app_admin/src/utils/regexp.dart';
+import 'package:festix_app_admin/src/views/components/card/snack_bar_custom.dart';
 import 'package:festix_app_admin/src/widgets/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -404,7 +405,12 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                               txtEditDateEnd.text = widget.loadedValue['data']['festivals'][i]['dateEnd'];
                               txtEditDescription.text = widget.loadedValue['data']['festivals'][i]['description'];
                               txtEditPhotoUrl.text = widget.loadedValue['data']['festivals'][i]['photoUrl'];
-                              //todo GO EVENTS -> with id festival
+                              var value = getFestivalsSelected();
+                              if (value != null) {
+                                FestivalModel festivalModel = value;
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pushNamed("/events", arguments: festivalModel);
+                              }
                             },
                             icon: const Icon(
                               Icons.event,
@@ -549,61 +555,18 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
           'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
         },
       );
-      print(response);
-      print(response.statusCode);
-      print(response.body);
       if (response.statusCode == 200) {
         String? cookiesString = response.headers['set-cookie'];
         if (cookiesString != null) {
           await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
           await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              action: SnackBarAction(
-                label: '✘',
-                onPressed: () {
-                  ScaffoldMessengerState().removeCurrentSnackBar();
-                },
-              ),
-              content: const Text("La modification c'est bien passée !"),
-              duration: const Duration(milliseconds: 2000),
-              width: MediaQuery.of(context).size.width - 40,
-              // Width of the SnackBar.
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0, // Inner padding for SnackBar content.
-              ),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
-          );
+          CustomWidgets.buildSnackbar(context, "L'update c'est bien passée !");
         }
         Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pushNamed("/festivals");
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            action: SnackBarAction(
-              label: '✘',
-              onPressed: () {
-                ScaffoldMessengerState().removeCurrentSnackBar();
-              },
-            ),
-            content: const Text("Erreur lors de la modification !"),
-            duration: const Duration(milliseconds: 2000),
-            width: MediaQuery.of(context).size.width - 40,
-            // Width of the SnackBar.
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0, // Inner padding for SnackBar content.
-            ),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-        );
+        CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
       }
     }
   }
@@ -625,53 +588,13 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
         if (cookiesString != null) {
           await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
           await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              action: SnackBarAction(
-                label: '✘',
-                onPressed: () {
-                  ScaffoldMessengerState().removeCurrentSnackBar();
-                },
-              ),
-              content: const Text("Suppression ok !"),
-              duration: const Duration(milliseconds: 2000),
-              width: MediaQuery.of(context).size.width - 40,
-              // Width of the SnackBar.
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0, // Inner padding for SnackBar content.
-              ),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
-          );
+          CustomWidgets.buildSnackbar(context, "La suppression c'est bien passée !");
         }
         Navigator.of(context).pop();
         Navigator.of(context).pushNamed("/festivals");
       } else {
         print("error");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            action: SnackBarAction(
-              label: '✘',
-              onPressed: () {
-                ScaffoldMessengerState().removeCurrentSnackBar();
-              },
-            ),
-            content: const Text("Erreur !"),
-            duration: const Duration(milliseconds: 2000),
-            width: MediaQuery.of(context).size.width - 40,
-            // Width of the SnackBar.
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0, // Inner padding for SnackBar content.
-            ),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-        );
+        CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression!");
       }
     }
   }
