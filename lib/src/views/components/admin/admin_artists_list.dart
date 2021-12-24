@@ -337,60 +337,13 @@ class _AdminArtistsListState extends State<AdminArtistsList> {
     return Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 0), child: row);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: widget.loadedValue.isEmpty
-            ? Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(
-                      height: 40,
-                      width: 40,
-                      child: CircularProgressIndicator(
-                        semanticsLabel: 'Linear progress indicator',
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
-                  child: ListView.builder(
-                    itemCount: 1,
-                    scrollDirection: Axis.vertical,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return Column(children: [
-                        Row(
-                          children: [
-                            BoxText.heading3_5(
-                              widget.title,
-                              color: kcGrey50Color,
-                              textAlign: TextAlign.start,
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: DividerCustom(height: 2, width: 400),
-                        ),
-                        buildContent(),
-                      ]);
-                    },
-                  ),
-                ),
-              ));
-  }
-
   ArtistModel? getArtistsSelected() {
     for (var artist in widget.loadedValue['data']['artists']) {
       if (artist['id'] == txtEditId.text) {
         return ArtistModel(txtEditId.text, txtEditArtistName.text, txtEditDescription.text, txtEditMusicStyle.text, txtEditPhotoUrl.text);
       }
     }
-    return null;
+    return ArtistModel("0", txtEditArtistName.text, txtEditDescription.text, txtEditMusicStyle.text, txtEditPhotoUrl.text);;
   }
 
   Future<String> cookies() async {
@@ -468,6 +421,47 @@ class _AdminArtistsListState extends State<AdminArtistsList> {
     }
   }
 
+  void _add() async {
+    print("add");
+    var value = getArtistsSelected();
+    if (value != null) {
+      ArtistModel artistModel = value;
+      http.Response response = await http.post(
+        Uri.parse(ConstStorage.API_URL + '/artist/create/'),
+        body: jsonEncode(
+          <String, dynamic>{
+            "artistName": artistModel.artistName,
+            "description": artistModel.description,
+            "musicStyle": artistModel.musicStyle,
+            "photoUrl": artistModel.photoUrl,
+          },
+        ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'cookie': await cookies(),
+          'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
+        },
+      );
+      print(response);
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        String? cookiesString = response.headers['set-cookie'];
+        if (cookiesString != null) {
+          await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
+          await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
+          CustomWidgets.buildSnackbar(context, "L'update c'est bien passée !");
+        }
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed("/artists");
+      } else {
+        CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
+      }
+    }
+  }
+
+
   void _delete() async {
     print("_delete");
     var value = getArtistsSelected();
@@ -498,5 +492,265 @@ class _AdminArtistsListState extends State<AdminArtistsList> {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression!");
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: widget.loadedValue.isEmpty
+          ? Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: CircularProgressIndicator(
+                      semanticsLabel: 'Linear progress indicator',
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
+                child: ListView.builder(
+                  itemCount: 1,
+                  scrollDirection: Axis.vertical,
+                  itemBuilder: (BuildContext ctx, index) {
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            BoxText.heading3_5(
+                              widget.title,
+                              color: kcGrey50Color,
+                              textAlign: TextAlign.start,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Set fields
+                                txtEditId.text = "";
+                                txtEditArtistName.text = "";
+                                txtEditDescription.text = "";
+                                txtEditMusicStyle.text = "";
+                                txtEditPhotoUrl.text = "";
+
+                                // ****************************************** MODAL ************************** //
+                                showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: kcGrey750Color,
+                                  context: context,
+                                  elevation: 10,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40.0),
+                                  ),
+                                  builder: (context) {
+                                    return Wrap(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.fromLTRB(0, 40, 0, 40),
+                                                    child: BoxText.heading3_5(
+                                                      "Ajouter un Artiste",
+                                                      color: kcGrey200Color,
+                                                    ),
+                                                  ),
+                                                  // ****************************************** FIELDS MODAL ************************** //
+                                                  Visibility(
+                                                    child: TextFormField(
+                                                      controller: txtEditId,
+                                                      enabled: false,
+                                                      readOnly: true,
+                                                    ),
+                                                    visible: false,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditArtistName,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Nom d'artiste",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditMusicStyle,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Styles de musiques",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditPhotoUrl,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Url de photo de l'artiste",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      keyboardType: TextInputType.multiline,
+                                                      maxLines: null,
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditDescription,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Description de l'artiste",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  // ****************************************** BUTTONS MODAL ************************** //
+                                                  const SizedBox(
+                                                    height: 30,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                        child: BoxText.body("Annuler", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcGrey200Color,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 40,
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          _add();
+                                                        },
+                                                        child: BoxText.body("Ajouter", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcBlue500Color,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: BoxText.body("Ajouter", color: kcGrey900Color),
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: Size(MediaQuery.of(context).size.width / 2 - 100, 35),
+                                primary: kcBlue500Color,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                          child: DividerCustom(height: 2, width: 400),
+                        ),
+                        buildContent(),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+    );
   }
 }
