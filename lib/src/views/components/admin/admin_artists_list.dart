@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:festix_app_admin/src/const/const_storage.dart';
-import 'package:festix_app_admin/src/models/FestivalModel.dart';
+import 'package:festix_app_admin/src/models/ArtistModel.dart';
 import 'package:festix_app_admin/src/shared/app_colors.dart';
 import 'package:festix_app_admin/src/shared/divider_custom.dart';
 import 'package:festix_app_admin/src/utils/regexp.dart';
@@ -16,28 +16,27 @@ import 'package:intl/intl.dart';
 
 import '../../../../../box_ui.dart';
 
-class AdminFestivalsList extends StatefulWidget {
+class AdminArtistsList extends StatefulWidget {
   final String title;
   final Map<String, dynamic> loadedValue;
 
-  const AdminFestivalsList({
+  const AdminArtistsList({
     Key? key,
     required this.title,
     required this.loadedValue,
   }) : super(key: key);
 
   @override
-  _AdminFestivalsListState createState() => _AdminFestivalsListState();
+  _AdminArtistsListState createState() => _AdminArtistsListState();
 }
 
-class _AdminFestivalsListState extends State<AdminFestivalsList> {
+class _AdminArtistsListState extends State<AdminArtistsList> {
   // init variables
   TextEditingController txtEditId = TextEditingController();
-  TextEditingController txtEditTitle = TextEditingController();
-  TextEditingController txtEditPhotoUrl = TextEditingController();
+  TextEditingController txtEditArtistName = TextEditingController();
   TextEditingController txtEditDescription = TextEditingController();
-  TextEditingController txtEditDateStart = TextEditingController();
-  TextEditingController txtEditDateEnd = TextEditingController();
+  TextEditingController txtEditMusicStyle = TextEditingController();
+  TextEditingController txtEditPhotoUrl = TextEditingController();
 
   @override
   void initState() {
@@ -47,7 +46,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
   Padding buildContent() {
     List<Widget> rows = [];
     Widget row = const Padding(padding: EdgeInsets.all(0));
-    for (var i = 0; i < widget.loadedValue['data']["festivals"].length; i++) {
+    for (var i = 0; i < widget.loadedValue['data']["artists"].length; i++) {
       rows.add(
         Column(
           children: [
@@ -55,28 +54,31 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 15, 0, 35),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          BoxText.body(widget.loadedValue['data']['festivals'][i]['title']),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        BoxText.bodySub(
-                          widget.loadedValue['data']['festivals'][i]['dateStart'],
-                          color: kcGrey200Color,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            BoxText.body(widget.loadedValue['data']['artists'][i]['artistName']),
+                          ],
                         ),
-                      ],
-                    )
-                  ],
+                      ),
+                      Row(
+                        children: [
+                          BoxText.bodySub(
+                            widget.loadedValue['data']['artists'][i]['musicStyle'],
+                            color: kcGrey200Color,
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -88,12 +90,11 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                           child: IconButton(
                             onPressed: () {
                               // Set fields
-                              txtEditId.text = widget.loadedValue['data']['festivals'][i]['id'];
-                              txtEditTitle.text = widget.loadedValue['data']['festivals'][i]['title'];
-                              txtEditDateStart.text = widget.loadedValue['data']['festivals'][i]['dateStart'];
-                              txtEditDateEnd.text = widget.loadedValue['data']['festivals'][i]['dateEnd'];
-                              txtEditDescription.text = widget.loadedValue['data']['festivals'][i]['description'];
-                              txtEditPhotoUrl.text = widget.loadedValue['data']['festivals'][i]['photoUrl'];
+                              txtEditId.text = widget.loadedValue['data']['artists'][i]['id'];
+                              txtEditArtistName.text = widget.loadedValue['data']['artists'][i]['artistName'];
+                              txtEditDescription.text = widget.loadedValue['data']['artists'][i]['description'];
+                              txtEditMusicStyle.text = widget.loadedValue['data']['artists'][i]['musicStyle'];
+                              txtEditPhotoUrl.text = widget.loadedValue['data']['artists'][i]['photoUrl'];
 
                               // ****************************************** MODAL ************************** //
                               showModalBottomSheet(
@@ -117,7 +118,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                                                   Padding(
                                                     padding: const EdgeInsets.fromLTRB(0, 40, 0, 40),
                                                     child: BoxText.heading3_5(
-                                                      "Modifier un Festival",
+                                                      "Modifier un Artiste",
                                                       color: kcGrey200Color,
                                                     ),
                                                   ),
@@ -134,14 +135,43 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                                                     width: MediaQuery.of(context).size.width - 70,
                                                     child: TextFormField(
                                                       textAlign: TextAlign.left,
-                                                      controller: txtEditTitle,
+                                                      controller: txtEditArtistName,
                                                       style: bodyBaseTextStyle,
                                                       cursorColor: kcGrey100Color,
                                                       decoration: InputDecoration(
                                                         contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                                                         filled: true,
                                                         fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['festivals'][i]['title'],
+                                                        hintText: widget.loadedValue['data']['artists'][i]['artistName'],
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: const OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditMusicStyle,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: InputDecoration(
+                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: widget.loadedValue['data']['artists'][i]['musicStyle'],
                                                         hintStyle: inputModalTextStyle,
                                                         floatingLabelStyle: inputModalTextStyle,
                                                         labelStyle: bodyBaseTextStyle,
@@ -170,107 +200,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                                                         contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                                                         filled: true,
                                                         fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['festivals'][i]['photoUrl'],
-                                                        hintStyle: inputModalTextStyle,
-                                                        floatingLabelStyle: inputModalTextStyle,
-                                                        labelStyle: bodyBaseTextStyle,
-                                                        prefixIconColor: kcGrey100Color,
-                                                        border: const OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                          borderSide: BorderSide(
-                                                            width: 0,
-                                                            style: BorderStyle.none,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context).size.width - 70,
-                                                    child: TextFormField(
-                                                      readOnly: true,
-                                                      onTap: () async {
-                                                        DateTime? pickedDate = await showDatePicker(
-                                                            context: context,
-                                                            initialDate: DateTime.now(),
-                                                            firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
-                                                            lastDate: DateTime.now().add(const Duration(days: 365)));
-
-                                                        if (pickedDate != null) {
-                                                          print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                                          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                                                          print(formattedDate); //formatted date output using intl package =>  2021-03-16
-                                                          //you can implement different kind of Date Format here according to your requirement
-
-                                                          setState(() {
-                                                            txtEditDateStart.text = formattedDate; //set output date to TextField value.
-                                                          });
-                                                        } else {
-                                                          print("Date is not selected");
-                                                        }
-                                                      },
-                                                      textAlign: TextAlign.left,
-                                                      controller: txtEditDateStart,
-                                                      style: bodyBaseTextStyle,
-                                                      cursorColor: kcGrey100Color,
-                                                      decoration: InputDecoration(
-                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                                        filled: true,
-                                                        fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['festivals'][i]['dateStart'],
-                                                        hintStyle: inputModalTextStyle,
-                                                        floatingLabelStyle: inputModalTextStyle,
-                                                        labelStyle: bodyBaseTextStyle,
-                                                        prefixIconColor: kcGrey100Color,
-                                                        border: const OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                          borderSide: BorderSide(
-                                                            width: 0,
-                                                            style: BorderStyle.none,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context).size.width - 70,
-                                                    child: TextFormField(
-                                                      readOnly: true,
-                                                      onTap: () async {
-                                                        DateTime? pickedDate = await showDatePicker(
-                                                            context: context,
-                                                            initialDate: DateTime.now(),
-                                                            firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
-                                                            lastDate: DateTime.now().add(const Duration(days: 365)));
-
-                                                        if (pickedDate != null) {
-                                                          print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                                          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                                                          print(formattedDate); //formatted date output using intl package =>  2021-03-16
-                                                          //you can implement different kind of Date Format here according to your requirement
-
-                                                          setState(() {
-                                                            txtEditDateEnd.text = formattedDate; //set output date to TextField value.
-                                                          });
-                                                        } else {
-                                                          print("Date is not selected");
-                                                        }
-                                                      },
-                                                      textAlign: TextAlign.left,
-                                                      controller: txtEditDateEnd,
-                                                      style: bodyBaseTextStyle,
-                                                      cursorColor: kcGrey100Color,
-                                                      decoration: InputDecoration(
-                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                                        filled: true,
-                                                        fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['festivals'][i]['dateEnd'],
+                                                        hintText: widget.loadedValue['data']['artists'][i]['photoUrl'],
                                                         hintStyle: inputModalTextStyle,
                                                         floatingLabelStyle: inputModalTextStyle,
                                                         labelStyle: bodyBaseTextStyle,
@@ -301,7 +231,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                                                         contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                                                         filled: true,
                                                         fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['festivals'][i]['description'],
+                                                        hintText: widget.loadedValue['data']['artists'][i]['description'],
                                                         hintStyle: inputModalTextStyle,
                                                         floatingLabelStyle: inputModalTextStyle,
                                                         labelStyle: bodyBaseTextStyle,
@@ -316,10 +246,10 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                                                       ),
                                                     ),
                                                   ),
+                                                  // ****************************************** BUTTONS MODAL ************************** //
                                                   const SizedBox(
                                                     height: 30,
                                                   ),
-                                                  // ****************************************** BUTTONS MODAL ************************** //
                                                   Row(
                                                     children: [
                                                       ElevatedButton(
@@ -372,48 +302,16 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
                           child: IconButton(
                             onPressed: () {
                               // Set fields
-                              txtEditId.text = widget.loadedValue['data']['festivals'][i]['id'];
-                              txtEditTitle.text = widget.loadedValue['data']['festivals'][i]['title'];
-                              txtEditDateStart.text = widget.loadedValue['data']['festivals'][i]['dateStart'];
-                              txtEditDateEnd.text = widget.loadedValue['data']['festivals'][i]['dateEnd'];
-                              txtEditDescription.text = widget.loadedValue['data']['festivals'][i]['description'];
-                              txtEditPhotoUrl.text = widget.loadedValue['data']['festivals'][i]['photoUrl'];
+                              txtEditId.text = widget.loadedValue['data']['artists'][i]['id'];
+                              txtEditArtistName.text = widget.loadedValue['data']['artists'][i]['artistName'];
+                              txtEditDescription.text = widget.loadedValue['data']['artists'][i]['description'];
+                              txtEditMusicStyle.text = widget.loadedValue['data']['artists'][i]['musicStyle'];
+                              txtEditPhotoUrl.text = widget.loadedValue['data']['artists'][i]['photoUrl'];
                               _delete();
                             },
                             icon: const Icon(
                               Icons.delete_rounded,
                               color: kcRed500Color,
-                            ),
-                            iconSize: 20,
-                            padding: const EdgeInsets.all(0),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 25, 0),
-                          child: IconButton(
-                            onPressed: () {
-                              // Set fields
-                              txtEditId.text = widget.loadedValue['data']['festivals'][i]['id'];
-                              txtEditTitle.text = widget.loadedValue['data']['festivals'][i]['title'];
-                              txtEditDateStart.text = widget.loadedValue['data']['festivals'][i]['dateStart'];
-                              txtEditDateEnd.text = widget.loadedValue['data']['festivals'][i]['dateEnd'];
-                              txtEditDescription.text = widget.loadedValue['data']['festivals'][i]['description'];
-                              txtEditPhotoUrl.text = widget.loadedValue['data']['festivals'][i]['photoUrl'];
-                              var value = getFestivalsSelected();
-                              if (value != null) {
-                                FestivalModel festivalModel = value;
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pushNamed("/events", arguments: festivalModel);
-                              }
-                            },
-                            icon: const Icon(
-                              Icons.event,
-                              color: kcBlue500Color,
                             ),
                             iconSize: 20,
                             padding: const EdgeInsets.all(0),
@@ -486,12 +384,10 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
               ));
   }
 
-  FestivalModel? getFestivalsSelected() {
-    for (var festival in widget.loadedValue['data']['festivals']) {
-      if (festival['id'] == txtEditId.text) {
-        print(txtEditDateStart.text);
-        print(txtEditDateEnd.text);
-        return FestivalModel(txtEditId.text, txtEditTitle.text, txtEditPhotoUrl.text, txtEditDescription.text, DateTime.parse(txtEditDateStart.text), DateTime.parse(txtEditDateEnd.text));
+  ArtistModel? getArtistsSelected() {
+    for (var artist in widget.loadedValue['data']['artists']) {
+      if (artist['id'] == txtEditId.text) {
+        return ArtistModel(txtEditId.text, txtEditArtistName.text, txtEditDescription.text, txtEditMusicStyle.text, txtEditPhotoUrl.text);
       }
     }
     return null;
@@ -534,18 +430,17 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
 
   void _update() async {
     print("update");
-    var value = getFestivalsSelected();
+    var value = getArtistsSelected();
     if (value != null) {
-      FestivalModel festivalModel = value;
+      ArtistModel artistModel = value;
       http.Response response = await http.patch(
-        Uri.parse(ConstStorage.API_URL + '/festival/update/' + festivalModel.id + "/"),
+        Uri.parse(ConstStorage.API_URL + '/artist/update/' + artistModel.id + "/"),
         body: jsonEncode(
           <String, dynamic>{
-            "title": festivalModel.title,
-            "description": festivalModel.description,
-            "photoUrl": festivalModel.photoUrl,
-            "dateStart": DateFormat("yyyy-MM-dd").format(festivalModel.dateStart),
-            "dateEnd": DateFormat("yyyy-MM-dd").format(festivalModel.dateEnd),
+            "artistName": artistModel.artistName,
+            "description": artistModel.description,
+            "musicStyle": artistModel.musicStyle,
+            "photoUrl": artistModel.photoUrl,
           },
         ),
         headers: <String, String>{
@@ -554,6 +449,9 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
           'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
         },
       );
+      print(response);
+      print(response.statusCode);
+      print(response.body);
       if (response.statusCode == 200) {
         String? cookiesString = response.headers['set-cookie'];
         if (cookiesString != null) {
@@ -563,7 +461,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
         }
         Navigator.of(context).pop();
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/festivals");
+        Navigator.of(context).pushNamed("/artists");
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
       }
@@ -571,17 +469,21 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
   }
 
   void _delete() async {
-    var value = getFestivalsSelected();
+    print("_delete");
+    var value = getArtistsSelected();
     if (value != null) {
-      FestivalModel festivalModel = value;
+      ArtistModel artistModel = value;
       http.Response response = await http.delete(
-        Uri.parse(ConstStorage.API_URL + '/festival/delete/' + festivalModel.id + "/"),
+        Uri.parse(ConstStorage.API_URL + '/artist/delete/' + artistModel.id + "/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'cookie': await cookies(),
           'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
         },
       );
+      print(response);
+      print(response.statusCode);
+      print(response.body);
       if (response.statusCode == 200) {
         String? cookiesString = response.headers['set-cookie'];
         if (cookiesString != null) {
@@ -590,7 +492,7 @@ class _AdminFestivalsListState extends State<AdminFestivalsList> {
           CustomWidgets.buildSnackbar(context, "La suppression c'est bien passée !");
         }
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/festivals");
+        Navigator.of(context).pushNamed("/artists");
       } else {
         print("error");
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression!");
