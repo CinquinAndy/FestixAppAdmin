@@ -37,16 +37,46 @@ class _AdminEventsListState extends State<AdminEventsList> {
   TextEditingController txtEditDate = TextEditingController();
   TextEditingController txtEditTime = TextEditingController();
   TextEditingController txtEditArtistEnAvant = TextEditingController();
+  String _currentSelectedValueArtist = "";
 
   @override
   void initState() {
     super.initState();
+    _fetchDataArtists();
+  }
+
+  Map<String, dynamic> _loadedArtists = {};
+  var artistList = ["", ""];
+
+  Future<void> _fetchDataArtists() async {
+    final response = await http.get(Uri.parse(ConstStorage.API_URL + "/artist/list/"));
+    final data = json.decode(utf8.decode(response.bodyBytes));
+
+    if (response.statusCode == 200) {
+      String? cookiesString = response.headers['set-cookie'];
+
+      if (cookiesString != null) {
+        await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
+        CustomWidgets.buildSnackbar(context, "Les données ont bien étés récupérées !");
+      }
+    } else {
+      CustomWidgets.buildSnackbar(context, "Erreur lors de la récupération des données !");
+    }
+
+    artistList = [];
+    for (var artist in data['data']['artists']) {
+      artistList.add(artist['artistName']);
+    }
+
+    setState(() {
+      _loadedArtists = data;
+    });
   }
 
   Padding buildContent() {
     List<Widget> rows = [];
     Widget row = const Padding(padding: EdgeInsets.all(0));
-    for (var i = 0; i < widget.loadedValue['data']["events"].length; i++) {
+    for (var i = 0; i < widget.loadedValue['data']['events'].length; i++) {
       rows.add(
         Column(
           children: [
@@ -199,7 +229,8 @@ class _AdminEventsListState extends State<AdminEventsList> {
                                                             DateTime? pickedDate = await showDatePicker(
                                                                 context: context,
                                                                 initialDate: DateTime.now(),
-                                                                firstDate: DateTime.now(), //DateTime.now() - not to allow to choose before today.
+                                                                firstDate: DateTime.now(),
+                                                                //DateTime.now() - not to allow to choose before today.
                                                                 lastDate: DateTime.now().add(const Duration(days: 365)));
                                                             if (pickedDate != null) {
                                                               print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
@@ -379,53 +410,6 @@ class _AdminEventsListState extends State<AdminEventsList> {
     return Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 0), child: row);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: widget.loadedValue.isEmpty
-            ? Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(
-                      height: 40,
-                      width: 40,
-                      child: CircularProgressIndicator(
-                        semanticsLabel: 'Linear progress indicator',
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
-                  child: ListView.builder(
-                    itemCount: 1,
-                    scrollDirection: Axis.vertical,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return Column(children: [
-                        Row(
-                          children: [
-                            BoxText.heading3_5(
-                              widget.title,
-                              color: kcGrey50Color,
-                              textAlign: TextAlign.start,
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: DividerCustom(height: 2, width: 400),
-                        ),
-                        buildContent(),
-                      ]);
-                    },
-                  ),
-                ),
-              ));
-  }
-
   EventModel? getEventsSelected() {
     for (var event in widget.loadedValue['data']['events']) {
       if (event['id'] == txtEditId.text) {
@@ -433,7 +417,8 @@ class _AdminEventsListState extends State<AdminEventsList> {
         return EventModel(txtEditId.text, txtEditTitle.text, datetime, txtEditArtistEnAvant.text, widget.idFestival);
       }
     }
-    return null;
+    DateTime datetime = DateTime.parse(txtEditDate.text + "T" + txtEditTime.text);
+    return EventModel("", txtEditTitle.text, datetime, txtEditArtistEnAvant.text, widget.idFestival);
   }
 
   Future<String> cookies() async {
@@ -502,6 +487,37 @@ class _AdminEventsListState extends State<AdminEventsList> {
     }
   }
 
+  void _add() async {
+    var value = getEventsSelected();
+    if (value != null) {
+      EventModel eventModel = value;
+      http.Response response = await http.patch(
+        Uri.parse(ConstStorage.API_URL + '/event/create/'),
+        body: jsonEncode(
+          <String, dynamic>{"title": eventModel.title, "dateTime": DateFormat("yyyy-MM-ddThh:mm").format(eventModel.dateTime), "artistEnAvant": eventModel.artistEnAvant, "festival": widget.idFestival},
+        ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'cookie': await cookies(),
+          'X-XSRF-TOKEN': RegexpTokens.getExtractedTokenFromCookie(await const FlutterSecureStorage().read(key: ConstStorage.X_XSRF_TOKEN) ?? ""),
+        },
+      );
+      if (response.statusCode == 200) {
+        String? cookiesString = response.headers['set-cookie'];
+        if (cookiesString != null) {
+          await const FlutterSecureStorage().write(key: ConstStorage.X_XSRF_TOKEN, value: RegexpTokens.getCompleteXsrf(cookiesString));
+          await const FlutterSecureStorage().write(key: ConstStorage.JSESSIONID, value: RegexpTokens.getCompleteJsessionid(cookiesString));
+          CustomWidgets.buildSnackbar(context, "L'update c'est bien passée !");
+        }
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed("/events");
+      } else {
+        CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
+      }
+    }
+  }
+
   void _delete() async {
     var value = getEventsSelected();
     if (value != null) {
@@ -527,5 +543,330 @@ class _AdminEventsListState extends State<AdminEventsList> {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression !");
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: widget.loadedValue.isEmpty
+          ? Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: CircularProgressIndicator(
+                      semanticsLabel: 'Linear progress indicator',
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
+                child: ListView.builder(
+                  itemCount: 1,
+                  scrollDirection: Axis.vertical,
+                  itemBuilder: (BuildContext ctx, index) {
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            BoxText.heading3_5(
+                              widget.title,
+                              color: kcGrey50Color,
+                              textAlign: TextAlign.start,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Set fields
+                                txtEditId.text = "";
+                                txtEditTitle.text = "";
+                                txtEditDate.text = "";
+                                txtEditTime.text = "";
+                                txtEditArtistEnAvant.text = "";
+
+                                // ****************************************** MODAL ************************** //
+                                showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: kcGrey750Color,
+                                  context: context,
+                                  elevation: 10,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40.0),
+                                  ),
+                                  builder: (context) {
+                                    return Wrap(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.fromLTRB(0, 40, 0, 40),
+                                                    child: BoxText.heading3_5(
+                                                      "Ajouter un Event",
+                                                      color: kcGrey200Color,
+                                                    ),
+                                                  ),
+                                                  // ****************************************** FIELDS MODAL ************************** //
+                                                  Visibility(
+                                                    child: TextFormField(
+                                                      controller: txtEditId,
+                                                      enabled: false,
+                                                      readOnly: true,
+                                                    ),
+                                                    visible: false,
+                                                  ),
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width - 70,
+                                                    child: TextFormField(
+                                                      textAlign: TextAlign.left,
+                                                      controller: txtEditTitle,
+                                                      style: bodyBaseTextStyle,
+                                                      cursorColor: kcGrey100Color,
+                                                      decoration: const InputDecoration(
+                                                        contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                        filled: true,
+                                                        fillColor: kcGrey800Color,
+                                                        hintText: "Titre de l'événement",
+                                                        hintStyle: inputModalTextStyle,
+                                                        floatingLabelStyle: inputModalTextStyle,
+                                                        labelStyle: bodyBaseTextStyle,
+                                                        prefixIconColor: kcGrey100Color,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                          borderSide: BorderSide(
+                                                            width: 0,
+                                                            style: BorderStyle.none,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  artistList.isEmpty
+                                                      ? Container()
+                                                      : SizedBox(
+                                                          width: MediaQuery.of(context).size.width - 70,
+                                                          child: FormField<String>(
+                                                            builder: (FormFieldState<String> state) {
+                                                              return InputDecorator(
+                                                                decoration: const InputDecoration(
+                                                                  contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                                  filled: true,
+                                                                  fillColor: kcGrey800Color,
+                                                                  hintText: "Artiste en avant",
+                                                                  hintStyle: inputModalTextStyle,
+                                                                  floatingLabelStyle: inputModalTextStyle,
+                                                                  labelStyle: bodyBaseTextStyle,
+                                                                  prefixIconColor: kcGrey100Color,
+                                                                  border: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                                    borderSide: BorderSide(
+                                                                      width: 0,
+                                                                      style: BorderStyle.none,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                isEmpty: _currentSelectedValueArtist == '',
+                                                                child: DropdownButtonHideUnderline(
+                                                                  child: DropdownButton<String>(
+                                                                    style: inputModalTextStyle,
+                                                                    value: _currentSelectedValueArtist.isNotEmpty ? _currentSelectedValueArtist : null, // guard it with null if empty
+                                                                    isDense: true,
+                                                                    onChanged: (String? newValue) {
+                                                                      setState(() {
+                                                                        _currentSelectedValueArtist = newValue ?? "";
+                                                                        state.didChange(newValue);
+                                                                      });
+                                                                    },
+                                                                    items: artistList.map((String value) {
+                                                                      return DropdownMenuItem<String>(
+                                                                        value: value,
+                                                                        child: Text(value),
+                                                                      );
+                                                                    }).toList(),
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: MediaQuery.of(context).size.width / 2 - 70,
+                                                        child: TextFormField(
+                                                          readOnly: true,
+                                                          onTap: () async {
+                                                            DateTime? pickedDate = await showDatePicker(
+                                                                context: context,
+                                                                initialDate: DateTime.now(),
+                                                                firstDate: DateTime.now(),
+                                                                //DateTime.now() - not to allow to choose before today.
+                                                                lastDate: DateTime.now().add(const Duration(days: 365)));
+                                                            if (pickedDate != null) {
+                                                              print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                                              String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                                                              print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                                                              //you can implement different kind of Date Format here according to your requirement
+
+                                                              setState(() {
+                                                                txtEditDate.text = formattedDate; //set output date to TextField value.
+                                                              });
+                                                            } else {
+                                                              print("Date is not selected");
+                                                            }
+                                                          },
+                                                          textAlign: TextAlign.left,
+                                                          controller: txtEditDate,
+                                                          style: bodyBaseTextStyle,
+                                                          cursorColor: kcGrey100Color,
+                                                          decoration: const InputDecoration(
+                                                            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                            filled: true,
+                                                            fillColor: kcGrey800Color,
+                                                            hintText: "Date",
+                                                            hintStyle: inputModalTextStyle,
+                                                            floatingLabelStyle: inputModalTextStyle,
+                                                            labelStyle: bodyBaseTextStyle,
+                                                            prefixIconColor: kcGrey100Color,
+                                                            border: OutlineInputBorder(
+                                                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                              borderSide: BorderSide(
+                                                                width: 0,
+                                                                style: BorderStyle.none,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 30,
+                                                      ),
+                                                      SizedBox(
+                                                        width: MediaQuery.of(context).size.width / 2 - 70,
+                                                        child: TextFormField(
+                                                          readOnly: true,
+                                                          onTap: () async {
+                                                            TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                                                            if (pickedTime != null) {
+                                                              print(pickedTime); //pickedDate output format => 2021-03-10 00:00:00.000
+                                                              final now = DateTime.now();
+                                                              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
+                                                              final format = DateFormat.jm(); //"6:00 AM"
+                                                              String formattedTime = format.format(dt);
+                                                              print(formattedTime);
+                                                              //formatted date output using intl package =>  2021-03-16
+                                                              //you can implement different kind of Date Format here according to your requirement
+
+                                                              setState(() {
+                                                                txtEditTime.text = formattedTime; //set output date to TextField value.
+                                                              });
+                                                            } else {
+                                                              print("Date is not selected");
+                                                            }
+                                                          },
+                                                          textAlign: TextAlign.left,
+                                                          controller: txtEditTime,
+                                                          style: bodyBaseTextStyle,
+                                                          cursorColor: kcGrey100Color,
+                                                          decoration: const InputDecoration(
+                                                            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                            filled: true,
+                                                            fillColor: kcGrey800Color,
+                                                            hintText: "Heure",
+                                                            hintStyle: inputModalTextStyle,
+                                                            floatingLabelStyle: inputModalTextStyle,
+                                                            labelStyle: bodyBaseTextStyle,
+                                                            prefixIconColor: kcGrey100Color,
+                                                            border: OutlineInputBorder(
+                                                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                              borderSide: BorderSide(
+                                                                width: 0,
+                                                                style: BorderStyle.none,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 30,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                        child: BoxText.body("Annuler", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcGrey200Color,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 40,
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          _add();
+                                                        },
+                                                        child: BoxText.body("Ajouter", color: kcGrey900Color),
+                                                        style: ElevatedButton.styleFrom(
+                                                          fixedSize: Size(MediaQuery.of(context).size.width / 2 - 80, 50),
+                                                          primary: kcBlue500Color,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: BoxText.body("Ajouter", color: kcGrey900Color),
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: Size(MediaQuery.of(context).size.width / 2 - 100, 35),
+                                primary: kcBlue500Color,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                          child: DividerCustom(height: 2, width: 400),
+                        ),
+                        buildContent(),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+    );
   }
 }
