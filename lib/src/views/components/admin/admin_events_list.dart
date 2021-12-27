@@ -43,8 +43,13 @@ class _AdminEventsListState extends State<AdminEventsList> {
   void initState() {
     super.initState();
     _fetchDataArtists();
+    // args = ModalRoute.of(context)!.settings.arguments as dynamic;
+    // if(args != null){
+    //   args = null;
+    // }
   }
 
+  // dynamic args;
   Map<String, dynamic> _loadedArtists = {};
   var artistList = ["", ""];
 
@@ -278,15 +283,10 @@ class _AdminEventsListState extends State<AdminEventsList> {
                                                           onTap: () async {
                                                             TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
                                                             if (pickedTime != null) {
-                                                              print(pickedTime); //pickedDate output format => 2021-03-10 00:00:00.000
-                                                              final now = DateTime.now();
-                                                              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
-                                                              final format = DateFormat.jm(); //"6:00 AM"
-                                                              String formattedTime = format.format(dt);
-                                                              print(formattedTime);
-                                                              //formatted date output using intl package =>  2021-03-16
-                                                              //you can implement different kind of Date Format here according to your requirement
+                                                              String hour = pickedTime.hour >= 10 ? pickedTime.hour.toString() : "0" + pickedTime.hour.toString();
+                                                              String minute = pickedTime.minute >= 10 ? pickedTime.minute.toString() : "0" + pickedTime.minute.toString();
 
+                                                              String formattedTime = hour + ":" + minute;
                                                               setState(() {
                                                                 txtEditTime.text = formattedTime; //set output date to TextField value.
                                                               });
@@ -480,7 +480,11 @@ class _AdminEventsListState extends State<AdminEventsList> {
         }
         Navigator.of(context).pop();
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/events");
+        // if(args != null){
+        // Navigator.of(context).pushNamed("/events", arguments: args);
+        // } else {
+          Navigator.of(context).pushNamed("/festivals");
+        // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
       }
@@ -491,10 +495,10 @@ class _AdminEventsListState extends State<AdminEventsList> {
     var value = getEventsSelected();
     if (value != null) {
       EventModel eventModel = value;
-      http.Response response = await http.patch(
+      http.Response response = await http.post(
         Uri.parse(ConstStorage.API_URL + '/event/create/'),
         body: jsonEncode(
-          <String, dynamic>{"title": eventModel.title, "dateTime": DateFormat("yyyy-MM-ddThh:mm").format(eventModel.dateTime), "artistEnAvant": eventModel.artistEnAvant, "festival": widget.idFestival},
+          <String, dynamic>{"title": eventModel.title, "dateTime": DateFormat("yyyy-MM-ddThh:mm").format(eventModel.dateTime), "artistEnAvant": _currentSelectedValueArtist, "festival": widget.idFestival},
         ),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -511,7 +515,11 @@ class _AdminEventsListState extends State<AdminEventsList> {
         }
         Navigator.of(context).pop();
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/events");
+        // if(args != null){
+        //   Navigator.of(context).pushNamed("/events", arguments: args);
+        // } else {
+          Navigator.of(context).pushNamed("/festivals");
+        // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
       }
@@ -538,7 +546,11 @@ class _AdminEventsListState extends State<AdminEventsList> {
           CustomWidgets.buildSnackbar(context, "La suppression c'est bien passée !");
         }
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed("/events");
+        // if(args != null){
+        //   Navigator.of(context).pushNamed("/events", arguments: args);
+        // } else {
+          Navigator.of(context).pushNamed("/festival");
+        // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression !");
       }
@@ -681,7 +693,8 @@ class _AdminEventsListState extends State<AdminEventsList> {
                                                                 child: DropdownButtonHideUnderline(
                                                                   child: DropdownButton<String>(
                                                                     style: inputModalTextStyle,
-                                                                    value: _currentSelectedValueArtist.isNotEmpty ? _currentSelectedValueArtist : null, // guard it with null if empty
+                                                                    value: _currentSelectedValueArtist.isNotEmpty ? _currentSelectedValueArtist : null,
+                                                                    // guard it with null if empty
                                                                     isDense: true,
                                                                     onChanged: (String? newValue) {
                                                                       setState(() {
@@ -763,15 +776,10 @@ class _AdminEventsListState extends State<AdminEventsList> {
                                                           onTap: () async {
                                                             TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
                                                             if (pickedTime != null) {
-                                                              print(pickedTime); //pickedDate output format => 2021-03-10 00:00:00.000
-                                                              final now = DateTime.now();
-                                                              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
-                                                              final format = DateFormat.jm(); //"6:00 AM"
-                                                              String formattedTime = format.format(dt);
-                                                              print(formattedTime);
-                                                              //formatted date output using intl package =>  2021-03-16
-                                                              //you can implement different kind of Date Format here according to your requirement
+                                                              String hour = pickedTime.hour >= 10 ? pickedTime.hour.toString() : "0" + pickedTime.hour.toString();
+                                                              String minute = pickedTime.minute >= 10 ? pickedTime.minute.toString() : "0" + pickedTime.minute.toString();
 
+                                                              String formattedTime = hour + ":" + minute;
                                                               setState(() {
                                                                 txtEditTime.text = formattedTime; //set output date to TextField value.
                                                               });
