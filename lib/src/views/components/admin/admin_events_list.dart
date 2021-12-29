@@ -51,6 +51,8 @@ class _AdminEventsListState extends State<AdminEventsList> {
 
   // dynamic args;
   Map<String, dynamic> _loadedArtists = {};
+
+  // Map<String, bool> _artistChecked = {};
   var artistList = ["", ""];
 
   Future<void> _fetchDataArtists() async {
@@ -69,8 +71,10 @@ class _AdminEventsListState extends State<AdminEventsList> {
     }
 
     artistList = [];
+    // _artistChecked = {};
     for (var artist in data['data']['artists']) {
       artistList.add(artist['artistName']);
+      // _artistChecked.putIfAbsent(artist['artistName'], () => false);
     }
 
     setState(() {
@@ -80,8 +84,13 @@ class _AdminEventsListState extends State<AdminEventsList> {
 
   Padding buildContent() {
     List<Widget> rows = [];
+
     Widget row = const Padding(padding: EdgeInsets.all(0));
     for (var i = 0; i < widget.loadedValue['data']['events'].length; i++) {
+      // List<Widget> _listArtistCheckboxed = [];
+      // for (var artist in widget.loadedValue['data']['events'][i]['artists']) {
+      //   _listArtistCheckboxed.add(CheckboxListTile(title: BoxText.body(artist['artistName']), value: true, onChanged: (value) {}));
+      // }
       rows.add(
         Column(
           children: [
@@ -195,35 +204,59 @@ class _AdminEventsListState extends State<AdminEventsList> {
                                                   const SizedBox(
                                                     height: 10,
                                                   ),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context).size.width - 70,
-                                                    child: TextFormField(
-                                                      textAlign: TextAlign.left,
-                                                      controller: txtEditArtistEnAvant,
-                                                      style: bodyBaseTextStyle,
-                                                      cursorColor: kcGrey100Color,
-                                                      decoration: InputDecoration(
-                                                        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                                        filled: true,
-                                                        fillColor: kcGrey800Color,
-                                                        hintText: widget.loadedValue['data']['events'][i]['artistEnAvant'],
-                                                        hintStyle: inputModalTextStyle,
-                                                        floatingLabelStyle: inputModalTextStyle,
-                                                        labelStyle: bodyBaseTextStyle,
-                                                        prefixIconColor: kcGrey100Color,
-                                                        border: const OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                          borderSide: BorderSide(
-                                                            width: 0,
-                                                            style: BorderStyle.none,
+                                                  artistList.isEmpty
+                                                      ? Container()
+                                                      : SizedBox(
+                                                          width: MediaQuery.of(context).size.width - 70,
+                                                          child: FormField<String>(
+                                                            builder: (FormFieldState<String> state) {
+                                                              return InputDecorator(
+                                                                decoration: const InputDecoration(
+                                                                  contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                                                  filled: true,
+                                                                  fillColor: kcGrey800Color,
+                                                                  floatingLabelStyle: inputModalTextStyle,
+                                                                  labelStyle: bodyBaseTextStyle,
+                                                                  prefixIconColor: kcGrey100Color,
+                                                                  border: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                                    borderSide: BorderSide(
+                                                                      width: 0,
+                                                                      style: BorderStyle.none,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                isEmpty: _currentSelectedValueArtist == '',
+                                                                child: DropdownButtonHideUnderline(
+                                                                  child: DropdownButton<String>(
+                                                                    style: inputModalTextStyle,
+                                                                    value: _currentSelectedValueArtist.isNotEmpty ? _currentSelectedValueArtist : widget.loadedValue['data']['events'][i]['artistEnAvant'],
+                                                                    // guard it with null if empty
+                                                                    isDense: true,
+                                                                    onChanged: (String? newValue) {
+                                                                      setState(() {
+                                                                        _currentSelectedValueArtist = newValue ?? "";
+                                                                        state.didChange(newValue);
+                                                                      });
+                                                                    },
+                                                                    items: artistList.map((String value) {
+                                                                      return DropdownMenuItem<String>(
+                                                                        value: value,
+                                                                        child: Text(value),
+                                                                      );
+                                                                    }).toList(),
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            },
                                                           ),
                                                         ),
-                                                      ),
-                                                    ),
-                                                  ),
                                                   const SizedBox(
                                                     height: 10,
                                                   ),
+                                                  // Row(
+                                                  //   children: _listArtistCheckboxed,
+                                                  // ),
                                                   Row(
                                                     children: [
                                                       SizedBox(
@@ -401,6 +434,7 @@ class _AdminEventsListState extends State<AdminEventsList> {
         ),
       );
     }
+
     row = Container(
       child: Column(
         children: rows,
@@ -483,7 +517,7 @@ class _AdminEventsListState extends State<AdminEventsList> {
         // if(args != null){
         // Navigator.of(context).pushNamed("/events", arguments: args);
         // } else {
-          Navigator.of(context).pushNamed("/festivals");
+        Navigator.of(context).pushNamed("/festivals");
         // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
@@ -518,7 +552,7 @@ class _AdminEventsListState extends State<AdminEventsList> {
         // if(args != null){
         //   Navigator.of(context).pushNamed("/events", arguments: args);
         // } else {
-          Navigator.of(context).pushNamed("/festivals");
+        Navigator.of(context).pushNamed("/festivals");
         // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de l'update !");
@@ -549,7 +583,7 @@ class _AdminEventsListState extends State<AdminEventsList> {
         // if(args != null){
         //   Navigator.of(context).pushNamed("/events", arguments: args);
         // } else {
-          Navigator.of(context).pushNamed("/festival");
+        Navigator.of(context).pushNamed("/festival");
         // }
       } else {
         CustomWidgets.buildSnackbar(context, "Erreur lors de la suppression !");

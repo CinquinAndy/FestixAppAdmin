@@ -2,7 +2,7 @@
     package="fr.cinquin.andy.festix_app_admin">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="festix_app_admin"
+        android:label="Festix Admin"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
